@@ -5,17 +5,20 @@ from tqdm import tqdm
 import os
 import json
 
+# Checks for missing Python packages and installs them
 def install_missing_packages():
-    required = {'tqdm'}
-    installed = {pkg.key for pkg in pkg_resources.working_set}
-    missing = required - installed
+    required = {'tqdm'}  # Set of required packages
+    installed = {pkg.key for pkg in pkg_resources.working_set}  # Set of currently installed packages
+    missing = required - installed  # Determine missing packages
 
     if missing:
         print("Missing dependencies are being installed...")
         python = sys.executable
+        # Install missing packages using pip
         subprocess.check_call([python, '-m', 'pip', 'install', *missing], stdout=subprocess.DEVNULL)
         print("Installation of missing Python packages complete.")
 
+# Checks if FFmpeg is correctly installed and accessible
 def check_ffmpeg():
     try:
         subprocess.run(["ffmpeg", "-version"], stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=True)
@@ -26,6 +29,7 @@ def check_ffmpeg():
         print("FFmpeg is not available on your system.")
         print("Please install FFmpeg from https://ffmpeg.org/download.html")
 
+# Loads the configuration from a JSON file
 def load_config():
     try:
         with open('config.json', 'r') as config_file:
@@ -36,10 +40,15 @@ def load_config():
             "target_size_mb": 9.5,
             "prompt_for_target_size": True,
             "prompt_for_action": True,
-            "supported_audio_file_types": [".mp3"],
-            "supported_video_file_types": [".mp4"]
+            "supported_audio_file_types": [
+                ".mp3", ".wav", ".aac", ".ogg", ".m4a", ".flac"
+            ],
+            "supported_video_file_types": [
+                ".mp4", ".avi", ".mov", ".wmv", ".flv", ".mkv"
+            ]
         }
 
+# Lists files in a directory that match the supported file types
 def list_files(directory, file_types):
     files = [f for f in os.listdir(directory) if any(f.endswith(ext) for ext in file_types)]
     if not files:
@@ -50,6 +59,7 @@ def list_files(directory, file_types):
         print(f"{index}. {file}")
     return files
 
+# Converts a video file to an audio file using FFmpeg
 def convert_to_audio(video_path, output_folder):
     audio_output = os.path.join(output_folder, os.path.splitext(os.path.basename(video_path))[0] + ".mp3")
     cmd = ['ffmpeg', '-i', video_path, '-vn', '-acodec', 'libmp3lame', '-y', audio_output]
@@ -57,10 +67,11 @@ def convert_to_audio(video_path, output_folder):
     print(f"Converted video to audio at: {audio_output}")
     return audio_output
 
+# Splits media into segments of a specified size using FFmpeg
 def split_media(file_path, target_size_mb, output_parent_folder):
     output_folder = os.path.join(output_parent_folder, os.path.splitext(os.path.basename(file_path))[0] + "_splits")
     os.makedirs(output_folder, exist_ok=True)
-    media_type = 'audio' if file_path.endswith('.mp3') else 'video'
+    media_type = 'audio' if file_path.endswith(('.mp3', '.wav', '.aac', '.ogg', '.m4a', '.flac')) else 'video'
     cmd = ['ffprobe', '-v', 'error', '-show_entries', 'format=duration', '-of', 'default=noprint_wrappers=1:nokey=1', file_path]
     result = subprocess.run(cmd, stdout=subprocess.PIPE, text=True, check=True)
     duration_seconds = float(result.stdout.strip())
@@ -87,6 +98,7 @@ def split_media(file_path, target_size_mb, output_parent_folder):
     print("All segments have been created.")
     return output_folder
 
+# Main function to run the program
 def main():
     install_missing_packages()
     check_ffmpeg()
