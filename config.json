@@ -1,0 +1,7 @@
+{
+    "target_size_mb": 9.5,
+    "prompt_for_target_size": true,
+    "prompt_for_action": true,
+    "supported_audio_file_types": [".mp3"],
+    "supported_video_file_types": [".mp4"]
+}
