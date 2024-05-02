@@ -5,7 +5,7 @@ This tool is designed to split audio files into segments under 10MB, making it e
 To run this project, you will need to install Python and some dependencies:
 ```bash
 # Clone the repository
-git clone https://github.com/yourusername/audio-splitter-for-elevenlabs.git
+git clone https://github.com/hrafnfloki/Audio-Splitter-for-ElevenLabs.git
 cd audio-splitter-for-elevenlabs
 
 # Install required Python packages
